@@ -307,3 +307,55 @@ document.addEventListener('keydown', function(e) {
         closeModal();
     }
 });
+// Navbar scroll
+window.addEventListener('scroll', function() {
+  document.getElementById('mainNav').classList.toggle('tt-nav-scrolled', window.scrollY > 60);
+});
+
+// Scroll-reveal animations
+(function() {
+  var els = document.querySelectorAll('.tt-animate, .tt-animate-left, .tt-animate-right');
+  if (!els.length || !window.IntersectionObserver) {
+    els.forEach(function(el) { el.classList.add('visible'); });
+    return;
+  }
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // also trigger gold underline on sibling h2
+        var h2 = entry.target.querySelector('.tt-h2') || entry.target.closest('.text-center');
+        if (h2) {
+          var heading = h2.querySelector ? h2.querySelector('.tt-h2') : h2;
+          if (heading) heading.classList.add('visible');
+        }
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  els.forEach(function(el) { observer.observe(el); });
+
+  // Also animate section heading wrappers
+  document.querySelectorAll('.text-center').forEach(function(el) {
+    var h2 = el.querySelector('.tt-h2');
+    if (!h2) return;
+    var obs2 = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting) { h2.classList.add('visible'); obs2.disconnect(); }
+    }, { threshold: 0.3 });
+    obs2.observe(el);
+  });
+})();
+
+// Form submit
+function submitForm(e, formId) {
+  e.preventDefault();
+  var form = document.getElementById(formId);
+  var btn = form.querySelector('button[type="submit"]');
+  btn.textContent = 'Submitting...';
+  btn.disabled = true;
+  fetch('/submit', { method: 'POST', body: new FormData(form) })
+    .catch(function() {})
+    .finally(function() {
+      form.innerHTML = '<div class="text-center py-4"><i class="fa fa-check-circle tt-gold fa-3x mb-3 d-block"></i><h5>Thank you! Our team will call you within 30 minutes.</h5></div>';
+    });
+}
